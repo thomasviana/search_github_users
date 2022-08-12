@@ -10,7 +10,6 @@ class ApiClient {
 
   final Map<String, String> headers = {
     'Accept': 'application/vnd.github+json',
-    'Authorization': 'token: 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',
   };
 
   Future<List> fetchGithubUsers(String query) async {
