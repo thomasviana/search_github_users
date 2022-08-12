@@ -22,25 +22,22 @@ class SearchPageBloc extends Bloc<SearchPageEvent, SearchPageState> {
           events.debounceTime(duration).asyncExpand(mapper);
     }
 
-    on<QueryChangedEvent>(
-      (event, emit) async {
+    on<QueryChangedEvent>((event, emit) async {
+      if (event.query.isEmpty) {
+        emit(SearchPageInitial());
+      } else {
         emit(SearchPageLoading());
         try {
-          if (event.query.isEmpty) {
-            emit(SearchPageInitial());
+          final usersFound = await _searchGithubUsers(query: event.query);
+          if (usersFound.isEmpty) {
+            emit(SearchPageEmptyState());
           } else {
-            final usersFound = await _searchGithubUsers(query: event.query);
-            if (usersFound.isEmpty) {
-              emit(SearchPageEmptyState());
-            } else {
-              emit(SearchPageLoaded(usersFound));
-            }
+            emit(SearchPageLoaded(usersFound));
           }
         } on HttpException catch (e) {
           emit(SearchPageError(e));
         }
-      },
-      transformer: debounceSequential(const Duration(milliseconds: 1000)),
-    );
+      }
+    }, transformer: debounceSequential(const Duration(milliseconds: 1000)));
   }
 }
